@@ -272,9 +272,13 @@ X.triplets.prototype.clear = function() {
 
 
 /**
- * Get the number of triplets in this container.
+ * Get the number of triplets in this container _and_ resizes
+ * the internal array to match the real content. Afterwars a
+ * X.triplets.add() will _not_ add a triplet anymore, as the
+ * size is fixed then.
  * 
  * @return {!number} The number of triplets in this container.
+ * @sideffect Resizes the internal array to match the real content.
  * @public
  */
 X.triplets.prototype.__defineGetter__('count', function() {
@@ -286,12 +290,14 @@ X.triplets.prototype.__defineGetter__('count', function() {
   
 });
 
-
 /**
- * Get the length of this container. This equals the number of triplets
- * multiplied by 3.
+ * Get the length of this container _and_ resizes the internal
+ * array to match the real content. This equals the number of triplets
+ * multiplied by 3. Afterwars a X.triplets.add() will _not_ add a
+ * triplet anymore, as the size is fixed then.
  * 
  * @return {!number} The length of this container.
+ * @sideffect Resizes the internal array to match the real content.
  * @public
  */
 X.triplets.prototype.__defineGetter__('length', function() {
@@ -302,7 +308,6 @@ X.triplets.prototype.__defineGetter__('length', function() {
   return this._triplets.length;
   
 });
-
 
 // export symbols (required for advanced compilation)
 goog.exportSymbol('X.triplets', X.triplets);

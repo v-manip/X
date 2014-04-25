@@ -746,9 +746,16 @@ X.renderer3D.prototype.update_ = function(object) {
       }
 
       var _flipY = false;
-      if (texture._rawData) {
-        // use the standard webgl flip Y
-        _flipY = true;
+
+      // check if the texture defines the flipY behaviour on its own and set the
+      // flag accordingly:
+      if (texture._flipY) {
+        _flipY = texture._flipY;
+      } else {
+        if (texture._rawData) {
+          // use the standard webgl flip Y
+          _flipY = true;
+        }
       }
 
       this._context.pixelStorei(this._context.UNPACK_FLIP_Y_WEBGL, _flipY);
