@@ -184,6 +184,8 @@ X.progressbar.prototype.init_ = function() {
   // save the style element for later
   this._style = style;
   
+  return;
+  
   // render..
   this.render(this._parent);
   
@@ -201,6 +203,7 @@ X.progressbar.prototype.init_ = function() {
  * Display a green, full progress bar.
  */
 X.progressbar.prototype.done = function() {
+  return;
 
   // save the position of the original progress bar
   var top = this.getElement().style.top;
@@ -235,6 +238,7 @@ X.progressbar.prototype.done = function() {
  * Remove the progress bar from the document.
  */
 X.progressbar.prototype.kill = function() {
+  return;
 
   // hide the progress bar
   if (this._style) {
