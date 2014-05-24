@@ -105,6 +105,14 @@ X.texture = function() {
    */
   this._grayscale = false;
   
+  /**
+   * A flag for to flip the texture on its Y axis.
+   *
+   * @type {boolean}
+   * @protected
+   */
+  this._flipY = null;
+
   // inject functionality
   inject(this, new X.loadable()); // this object is loadable from a file
   
@@ -167,5 +175,20 @@ X.texture.prototype.__defineSetter__('grayscale', function(grayscale) {
   this._dirty = true;
   
 });
+
+
+/**
+ * Set the flipY flag for this texture.
+ *
+ * @param {boolean} grayscale The grayscale flag.
+ */
+X.texture.prototype.__defineSetter__('flipY', function(flipY) {
+
+  this._flipY = flipY;
+
+  this._dirty = true;
+
+});
+
 
 goog.exportSymbol('X.texture', X.texture);

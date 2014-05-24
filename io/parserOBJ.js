@@ -74,17 +74,20 @@ X.parserOBJ.prototype.parse = function(container, object, data, flag) {
   var byteData = this.scan('uchar', _length);
 
   // allocate memory using a good guess
-  var _pts = [];
   object._points = new X.triplets(_length);
   object._normals = new X.triplets(_length);
-  var p = object._points;
-  var n = object._normals;
+  var _pts = [],
+      _texCoords = [],
+      _normals = [],
+      p = object._points,
+      n = object._normals,
+      tc = [],
+      numFaces = 0;
   
   // store the beginning of the byte range
   var _rangeStart = 0;
  
-  var i;
-  for (i = 0; i < _length; ++i) {
+  for (var i = 0; i < _length; ++i) {
      
      if (byteData[i] == 10) { // line break
 
@@ -102,24 +105,73 @@ X.parserOBJ.prototype.parse = function(container, object, data, flag) {
 
        } else if (_d[0] == "f") {
 
-         // assumes all points have been read
-         var p1 = _pts[parseInt(_d[1], 10)-1];
-         var p2 = _pts[parseInt(_d[2], 10)-1];
-         var p3 = _pts[parseInt(_d[3], 10)-1];
+         for (var idx = 0; idx < 3; idx++) {  
+
+            // split up eventual texture- and/or normal-coordinate indices
+            var _vinfo = _d[idx+1].split('/');
+
+            // _vinfo.length() === 1 -> vertex index given
+            // _vinfo.length() === 2 -> vertex + texture-coordinate index given
+            // _vinfo.length() === 3 -> vertex + texture + normal coordinate index given
+
+            // assumes all points have been read
+            var p1 = _pts[parseInt(_vinfo[0], 10)-1];
+  
+            p.add(p1[0], p1[1], p1[2]);
+
+            // handle texture coordinates, if present:
+            if (_vinfo.length >= 2 && _vinfo[1].length) {
+              var tcoord = _texCoords[_vinfo[1]-1];
+              tc.push(tcoord[0]);
+              tc.push(tcoord[1]);
+
+            }
+
+            // handle normals, if present:
+            var norm;
+            // check if normal is already given in .obj file, otherwise calculate it
+            if (_vinfo.length === 3 && _vinfo[2].length) {
+
+              var n1 = _normals[parseInt(_vinfo[2], 10)-1];
+
+              norm = new goog.math.Vec3(n1[0], n1[1], n1[2]);
+              norm.normalize();
+              n.add(norm.x, norm.y, norm.z);
+
+            } else if (idx === 2) { // calculate normal, when all 3 vertex points are read
+                                    // in and no normal is given in .OBJ file
+
+                var len = p._dataPointer / 3;
+
+                var v1 = new goog.math.Vec3(p.get(len-3)[0], p.get(len-3)[1], p.get(len-3)[2]);
+                var v2 = new goog.math.Vec3(p.get(len-2)[0], p.get(len-2)[1], p.get(len-2)[2]);
+                var v3 = new goog.math.Vec3(p.get(len-1)[0], p.get(len-1)[1], p.get(len-1)[2]);
+                
+                norm = goog.math.Vec3.cross(v2.subtract(v1),v3.subtract(v1));
+                norm.normalize();
+
+                n.add(norm.x, norm.y, norm.z);
+                n.add(norm.x, norm.y, norm.z);
+                n.add(norm.x, norm.y, norm.z);
+
+            }
+
+         }
+
+         numFaces++;
+
+       } else if (_d[0] == "vn") {
+         var x = parseFloat(_d[1]);
+         var y = parseFloat(_d[2]);
+         var z = parseFloat(_d[3]);
      
-         p.add(p1[0], p1[1], p1[2]);
-         p.add(p2[0], p2[1], p2[2]);
-         p.add(p3[0], p3[1], p3[2]);
+         _normals.push([x, y, z]);
+
+       } else if (_d[0] == "vt") {
+         var s = parseFloat(_d[1]);
+         var t = parseFloat(_d[2]);
      
-         // calculate normal
-         var v1 = new goog.math.Vec3(p1[0], p1[1], p1[2]);
-         var v2 = new goog.math.Vec3(p2[0], p2[1], p2[2]);
-         var v3 = new goog.math.Vec3(p3[0], p3[1], p3[2]);
-         var norm = goog.math.Vec3.cross(v2.subtract(v1),v3.subtract(v1));
-         norm.normalize();
-         n.add(norm.x, norm.y, norm.z);
-         n.add(norm.x, norm.y, norm.z);
-         n.add(norm.x, norm.y, norm.z);
+         _texCoords.push([s,t]);
 
        }
 
@@ -129,6 +181,19 @@ X.parserOBJ.prototype.parse = function(container, object, data, flag) {
   
   }
 
+  // finalize arrays:
+  if (tc.length) {
+    object._textureCoordinateMap = tc;
+  }
+  p.resize();
+  n.resize();
+
+  // console.log('OBJ stats:');
+  // console.log(' * verts:     ' + _pts.length);
+  // console.log(' * faces:     ' + numFaces);
+  // console.log(' * normals:   ' + n._dataPointer / 3);
+  // console.log(' * texCoords: ' + tc.length/2);
+
   X.TIMERSTOP(this._classname + '.parse');
   
   // the object should be set up here, so let's fire a modified event
@@ -136,7 +201,6 @@ X.parserOBJ.prototype.parse = function(container, object, data, flag) {
   modifiedEvent._object = object;
   modifiedEvent._container = container;
   this.dispatchEvent(modifiedEvent);
-  
 };
 
 // export symbols (required for advanced compilation)
