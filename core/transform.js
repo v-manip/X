@@ -232,6 +232,21 @@ X.transform.prototype.translateZ = function(distance) {
 
 };
 
+/**
+
+ * Translate on the Z-axis.
+ *
+ * @param {number} distance The distance to move.
+ * @throws {Error} An exception, if the given distance is invalid.
+ */
+X.transform.prototype.scale = function(x, y, z) {
+
+  X.matrix.scale(this._matrix, x, y, z);
+
+  this.modified();
+
+};
+
 
 /**
  * Flip the matrix value at the given index.
@@ -303,6 +318,8 @@ goog.exportSymbol('X.transform.prototype.translateY',
     X.transform.prototype.translateY);
 goog.exportSymbol('X.transform.prototype.translateZ',
     X.transform.prototype.translateZ);
+goog.exportSymbol('X.transform.prototype.scale',
+    X.transform.prototype.scale);
 goog.exportSymbol('X.transform.prototype.flipX', X.transform.prototype.flipX);
 goog.exportSymbol('X.transform.prototype.flipY', X.transform.prototype.flipY);
 goog.exportSymbol('X.transform.prototype.flipZ', X.transform.prototype.flipZ);
