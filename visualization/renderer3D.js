@@ -1990,6 +1990,9 @@ X.renderer3D.prototype.render_ = function(picking, invoked) {
  * @inheritDoc
  */
 X.renderer3D.prototype.remove = function(object) {
+  // FIXXME: Quick fix for the case when object is undefined/null. The calling function should ensure
+  // that the provided object is valid, so this should be fixed in the calling code...
+  if (!object) return;
 
 	// call the remove_ method of the superclass
 	goog.base(this, 'remove', object);
